@@ -184,7 +184,6 @@
 
 <!-- Sidebar Overlay for Mobile -->
 <div class="overlay" id="sidebarOverlay"></div>
-
 <!-- Sidebar -->
 <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
@@ -193,54 +192,57 @@
     </div>
 
     <ul class="nav-menu">
-        <li class="nav-item">
-            <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-                <i class="bi bi-speedometer2"></i>
-                <span>Dashboard</span>
-            </a>
-        </li>
+        @can('view dashboard')
+            <li class="nav-item">
+                <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+                    <i class="bi bi-speedometer2"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+        @endcan
+
+
+
+        @canany(['view roles', 'view users'])
+            @php
+                $isAccessControlActive = request()->routeIs('admin.roles.*') || request()->routeIs('admin.users.*');
+            @endphp
+            <li class="nav-item nav-dropdown">
+                <a href="#" class="nav-link {{ $isAccessControlActive ? 'parent-active' : '' }}" data-bs-toggle="collapse"
+                    data-bs-target="#accessControlMenu" role="button"
+                    aria-expanded="{{ $isAccessControlActive ? 'true' : 'false' }}">
+                    <i class="bi bi-people"></i>
+                    <span>User Management</span>
+                    <i class="bi bi-chevron-down dropdown-icon"></i>
+                </a>
+                <div class="collapse sub-menu {{ $isAccessControlActive ? 'show' : '' }}" id="accessControlMenu">
+                    @can('view users')
+                        <a href={{ route('admin.users.index') }}
+                            class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+                            <i class="bi bi-people"></i>
+                            <span>Users</span>
+                        </a>
+                    @endcan
+                    @can('view roles')
+                        <a href="{{ route('admin.roles.index') }}"
+                            class="nav-link {{ request()->routeIs('admin.roles.*') ? 'active' : '' }}">
+                            <i class="bi bi-shield-lock"></i>
+                            <span>Roles</span>
+                        </a>
+                    @endcan
+                </div>
+            </li>
+        @endcanany
 
         <li class="nav-item">
-            <a href="#" class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}">
-                <i class="bi bi-people"></i>
-                <span>Users</span>
+            <a href="{{ route('profile.edit') }}"
+                class="nav-link {{ request()->routeIs('profile.edit') ? 'active' : '' }}">
+                <i class="bi bi-person"></i>
+                <span>Profile setting</span>
             </a>
-        </li>
-
-        <li class="nav-item">
-            <a href="#" class="nav-link {{ request()->routeIs('roles.*') ? 'active' : '' }}">
-                <i class="bi bi-shield-lock"></i>
-                <span>Roles</span>
-            </a>
-        </li>
-
-        <!-- Dropdown Menu -->
-        <li class="nav-item nav-dropdown">
-            <a href="#" class="nav-link {{ request()->routeIs('profile.edit') ? 'parent-active' : '' }}"
-                data-bs-toggle="collapse" data-bs-target="#settingsMenu" role="button"
-                aria-expanded="{{ request()->routeIs('profile.edit') ? 'true' : 'false' }}">
-                <i class="bi bi-gear"></i>
-                <span>Settings</span>
-                <i class="bi bi-chevron-down dropdown-icon"></i>
-            </a>
-            <div class="collapse sub-menu {{ request()->routeIs('profile.edit') ? 'show' : '' }}" id="settingsMenu">
-                <a href="{{ route('profile.edit') }}" class="nav-link">
-                    <i class="bi bi-person"></i>
-                    <span>Profile</span>
-                </a>
-                <a href="#" class="nav-link">
-                    <i class="bi bi-sliders2"></i>
-                    <span>Preferences</span>
-                </a>
-                <a href="#" class="nav-link">
-                    <i class="bi bi-bell"></i>
-                    <span>Notifications</span>
-                </a>
-            </div>
         </li>
     </ul>
 </div>
-
 <script>
     // Ensure dropdown stays open when child is active
     document.addEventListener('DOMContentLoaded', function () {

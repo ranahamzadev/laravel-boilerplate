@@ -93,11 +93,6 @@
         <ul class="dropdown-menu dropdown-menu-end">
             <li>
                 <a class="dropdown-item" href="{{ route('profile.edit') }}">
-                    <i class="bi bi-person me-2"></i>My Profile
-                </a>
-            </li>
-            <li>
-                <a class="dropdown-item" href="#">
                     <i class="bi bi-gear me-2"></i>Settings
                 </a>
             </li>
