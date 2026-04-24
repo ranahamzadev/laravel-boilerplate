@@ -3,9 +3,9 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class UserSeeder extends Seeder
 {
@@ -14,23 +14,27 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        $users = [
-            [
-                'name' => 'Admin',
-                'email' => 'admin@example.com',
-                'password' => Hash::make('password'),
-                'email_verified_at' => now(),
-            ],
-            [
-                'name' => 'Regular User',
-                'email' => 'user@example.com',
-                'password' => Hash::make('password'),
-                'email_verified_at' => now(),
-            ]
-        ];
+        $admin = User::create([
+            'name' => 'Admin',
+            'email' => 'admin@test.com',
+            'password' => Hash::make('password')
+        ]);
+        $admin->assignRole('admin');
 
-        foreach ($users as $user) {
-            User::create($user);
-        }
+        // Creating Admin User
+        $editor = User::create([
+            'name' => 'vendor',
+            'email' => 'vendor@test.com',
+            'password' => Hash::make('password')
+        ]);
+        $editor->assignRole('vendor');
+
+        // Creating Product Manager User
+        $writer = User::create([
+            'name' => 'User',
+            'email' => 'user@test.com',
+            'password' => Hash::make('password')
+        ]);
+        $writer->assignRole('user');
     }
 }

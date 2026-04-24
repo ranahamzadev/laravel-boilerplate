@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
-use Spatie\Permission\Models\Permission;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class RoleSeeder extends Seeder
 {
@@ -13,44 +13,17 @@ class RoleSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create Super Admin role
-        $superAdmin = Role::create(['name' => 'super-admin']);
-
-        // Create Admin role
-        $admin = Role::create(['name' => 'admin']);
-
-        // Create Manager role
-        $manager = Role::create(['name' => 'manager']);
-
-        // Create User role
+        Role::create(['name' => 'admin']);
+        $vendor = Role::create(['name' => 'vendor']);
         $user = Role::create(['name' => 'user']);
 
-        // Assign all permissions to Super Admin
-        $superAdmin->givePermissionTo(Permission::all());
-
-        // Assign specific permissions to Admin
-        $admin->givePermissionTo([
-            'view users',
-            'create users',
-            'edit users',
-            'view dashboard',
-            'view settings',
-            'view roles',
-            'view permissions',
+        $vendor->givePermissionTo([
+            'view-profile',
+            'view-dashboard',
         ]);
-
-        // Assign limited permissions to Manager
-        $manager->givePermissionTo([
-            'view users',
-            'edit users',
-            'view dashboard',
-        ]);
-
-        // Assign basic permissions to regular User
         $user->givePermissionTo([
-            'view dashboard',
+            'view-profile',
+            'view-dashboard',
         ]);
-
-        $this->command->info('Roles seeded successfully!');
     }
 }

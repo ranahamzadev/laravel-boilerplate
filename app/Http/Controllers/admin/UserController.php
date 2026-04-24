@@ -38,7 +38,8 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|min:8|confirmed',
-            'role' => 'required|exists:roles,name',
+            'roles' => 'required|array|min:1',
+            'roles.*' => 'exists:roles,name',
         ]);
 
         $user = User::create([
@@ -48,31 +49,26 @@ class UserController extends Controller
             'email_verified_at' => now(),
         ]);
 
-        $user->assignRole($request->role);
+        $user->assignRole($request->roles);
 
         return redirect()->route('admin.users.index')
             ->with('success', 'User created successfully.');
     }
 
-    /**
-     * Show the form for editing the specified user.
-     */
     public function edit(User $user)
     {
         $roles = Role::all();
-        $userRole = $user->roles->first();
-        return view('admin.users.edit', compact('user', 'roles', 'userRole'));
+        $userRoles = $user->roles->pluck('name')->toArray();
+        return view('admin.users.edit', compact('user', 'roles', 'userRoles'));
     }
 
-    /**
-     * Update the specified user.
-     */
     public function update(Request $request, User $user)
     {
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => ['required', 'email', Rule::unique('users')->ignore($user->id)],
-            'role' => 'required|exists:roles,name',
+            'roles' => 'required|array|min:1',
+            'roles.*' => 'exists:roles,name',
         ]);
 
         $user->update([
@@ -80,7 +76,6 @@ class UserController extends Controller
             'email' => $request->email,
         ]);
 
-        // Update password if provided
         if ($request->filled('password')) {
             $request->validate([
                 'password' => 'min:8|confirmed',
@@ -88,8 +83,8 @@ class UserController extends Controller
             $user->update(['password' => Hash::make($request->password)]);
         }
 
-        // Sync role
-        $user->syncRoles([$request->role]);
+        // Sync multiple roles
+        $user->syncRoles($request->roles);
 
         return redirect()->route('admin.users.index')
             ->with('success', 'User updated successfully.');

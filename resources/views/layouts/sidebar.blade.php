@@ -69,6 +69,7 @@
     .nav-item {
         list-style: none;
         margin-bottom: 0.5rem;
+        width: 100%;
     }
 
     .nav-link {
@@ -81,6 +82,8 @@
         gap: 12px;
         cursor: pointer;
         white-space: nowrap;
+        width: 100%;
+        position: relative;
     }
 
     .nav-link:hover {
@@ -98,6 +101,7 @@
     .nav-link.parent-active {
         color: white;
         background: rgba(255, 255, 255, 0.15);
+        border-right: 3px solid rgba(255, 255, 255, 0.5);
     }
 
     .nav-link i {
@@ -119,8 +123,13 @@
     }
 
     /* Dropdown in sidebar */
+    .nav-dropdown {
+        width: 100%;
+    }
+
     .nav-dropdown .nav-link {
         position: relative;
+        width: 100%;
     }
 
     .dropdown-icon {
@@ -137,8 +146,9 @@
     }
 
     .sub-menu {
-        padding-left: 3.5rem;
+        padding-left: 0;
         background: rgba(0, 0, 0, 0.2);
+        width: 100%;
     }
 
     .sidebar.collapsed .sub-menu {
@@ -146,8 +156,9 @@
     }
 
     .sub-menu .nav-link {
-        padding: 0.5rem 1rem;
+        padding: 0.5rem 1rem 0.5rem 3.5rem;
         font-size: 0.85rem;
+        width: 100%;
     }
 
     .sub-menu .nav-link i {
@@ -184,6 +195,7 @@
 
 <!-- Sidebar Overlay for Mobile -->
 <div class="overlay" id="sidebarOverlay"></div>
+
 <!-- Sidebar -->
 <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
@@ -192,7 +204,7 @@
     </div>
 
     <ul class="nav-menu">
-        @can('view dashboard')
+        @can('view-dashboard')
             <li class="nav-item">
                 <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
                     <i class="bi bi-speedometer2"></i>
@@ -201,29 +213,27 @@
             </li>
         @endcan
 
-
-
-        @canany(['view roles', 'view users'])
+        @canany(['view-roles', 'view-users'])
             @php
                 $isAccessControlActive = request()->routeIs('admin.roles.*') || request()->routeIs('admin.users.*');
             @endphp
             <li class="nav-item nav-dropdown">
-                <a href="#" class="nav-link {{ $isAccessControlActive ? 'parent-active' : '' }}" data-bs-toggle="collapse"
-                    data-bs-target="#accessControlMenu" role="button"
+                <a href="#" class="nav-link {{ $isAccessControlActive ? 'parent-active' : '' }}"
+                    data-bs-toggle="collapse" data-bs-target="#accessControlMenu" role="button"
                     aria-expanded="{{ $isAccessControlActive ? 'true' : 'false' }}">
                     <i class="bi bi-people"></i>
                     <span>User Management</span>
                     <i class="bi bi-chevron-down dropdown-icon"></i>
                 </a>
                 <div class="collapse sub-menu {{ $isAccessControlActive ? 'show' : '' }}" id="accessControlMenu">
-                    @can('view users')
-                        <a href={{ route('admin.users.index') }}
+                    @can('view-users')
+                        <a href="{{ route('admin.users.index') }}"
                             class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
                             <i class="bi bi-people"></i>
                             <span>Users</span>
                         </a>
                     @endcan
-                    @can('view roles')
+                    @can('view-roles')
                         <a href="{{ route('admin.roles.index') }}"
                             class="nav-link {{ request()->routeIs('admin.roles.*') ? 'active' : '' }}">
                             <i class="bi bi-shield-lock"></i>
@@ -238,40 +248,31 @@
             <a href="{{ route('profile.edit') }}"
                 class="nav-link {{ request()->routeIs('profile.edit') ? 'active' : '' }}">
                 <i class="bi bi-person"></i>
-                <span>Profile setting</span>
+                <span>Profile Setting</span>
             </a>
         </li>
     </ul>
 </div>
+
 <script>
-    // Ensure dropdown stays open when child is active
-    document.addEventListener('DOMContentLoaded', function () {
-        // Check if any child of settings menu is active
-        const settingsMenu = document.getElementById('settingsMenu');
-        const settingsToggle = document.querySelector('[data-bs-target="#settingsMenu"]');
-
-        if (settingsMenu && settingsMenu.querySelector('.nav-link.active')) {
-            // Show the collapse menu
-            settingsMenu.classList.add('show');
-            // Set aria-expanded to true
-            if (settingsToggle) {
-                settingsToggle.setAttribute('aria-expanded', 'true');
-            }
-        }
-
-        // Add click handler to maintain active state
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle dropdown active states
         const subMenuLinks = document.querySelectorAll('.sub-menu .nav-link');
+
         subMenuLinks.forEach(link => {
-            link.addEventListener('click', function () {
+            link.addEventListener('click', function(e) {
+                // Don't prevent default, let the link work
+
                 // Remove active class from all submenu links
                 subMenuLinks.forEach(l => l.classList.remove('active'));
+
                 // Add active class to clicked link
                 this.classList.add('active');
 
-                // Keep the parent dropdown highlighted
+                // Update parent dropdown highlight
                 const parentDropdown = this.closest('.nav-dropdown');
                 if (parentDropdown) {
-                    const parentLink = parentDropdown.querySelector('> .nav-link');
+                    const parentLink = parentDropdown.querySelector(':scope > .nav-link');
                     if (parentLink) {
                         // Remove parent-active from all dropdown parents
                         document.querySelectorAll('.nav-dropdown > .nav-link').forEach(l => {
@@ -282,5 +283,19 @@
                 }
             });
         });
+
+        // Check active routes on page load
+        const currentPath = window.location.pathname;
+
+        // If on users or roles page, highlight parent
+        if (currentPath.includes('/admin/users') || currentPath.includes('/admin/roles')) {
+            const parentDropdown = document.querySelector('.nav-dropdown');
+            if (parentDropdown) {
+                const parentLink = parentDropdown.querySelector(':scope > .nav-link');
+                if (parentLink) {
+                    parentLink.classList.add('parent-active');
+                }
+            }
+        }
     });
 </script>

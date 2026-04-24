@@ -92,10 +92,10 @@ class RoleController extends Controller
      */
     public function destroy(Role $role)
     {
-        // Prevent deleting super-admin role
-        if ($role->name === 'super-admin') {
+        // Prevent deleting admin role
+        if ($role->name === 'admin') {
             return redirect()->route('admin.roles.index')
-                ->with('error', 'Cannot delete Super Admin role.');
+                ->with('error', 'Cannot delete Admin role.');
         }
 
         $role->delete();
